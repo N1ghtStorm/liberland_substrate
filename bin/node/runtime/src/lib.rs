@@ -792,6 +792,7 @@ parameter_types! {
 	pub const EnactmentPeriod: BlockNumber = 1 * DAYS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
 	pub const MaxProposals: u32 = 100;
+	pub const ProposalFeeAmount: Balance = 100 * DOLLARS;
 }
 
 impl pallet_democracy::Config for Runtime {
@@ -861,6 +862,9 @@ impl pallet_democracy::Config for Runtime {
 	type MaxDeposits = ConstU32<100>;
 	type MaxBlacklisted = ConstU32<100>;
 	type DelegateeFilter = ContainsMember<Runtime, CouncilCollective>;
+
+	type ProposalFee = Treasury;
+	type ProposalFeeAmount = ProposalFeeAmount;
 }
 
 parameter_types! {
