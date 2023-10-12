@@ -17,9 +17,10 @@
 
 //! Some configurable implementations as associated type for the substrate runtime.
 
+use super::*;
 use crate::{
 	AccountId, Assets, Authorship, Balances, NegativeImbalance, Runtime, Balance, RuntimeCall,
-	Democracy, RuntimeOrigin,
+	Democracy, RuntimeOrigin, EnsureRootOrHalfSenate
 };
 use codec::{Encode, Decode};
 use frame_support::{
@@ -29,13 +30,13 @@ use frame_support::{
 	traits::{
 		fungibles::{Balanced, Credit},
 		Currency, OnUnbalanced, InstanceFilter,
-		Contains,
+		Contains, PrivilegeCmp, EnsureOrigin
 	},
 };
 use sp_runtime::{AccountId32, DispatchError, traits::{TrailingZeroInput, Morph}};
 use pallet_asset_tx_payment::HandleCredit;
 use sp_staking::{EraIndex, OnStakerSlash};
-use sp_std::{vec, collections::btree_map::BTreeMap, cmp::{max, min}};
+use sp_std::{vec, collections::btree_map::BTreeMap, cmp::{max, min, Ordering}};
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -298,6 +299,19 @@ impl liberland_traits::OnLLMPoliticsUnlock<AccountId32> for OnLLMPoliticsUnlock
 		};
 
 		Ok(())
+	}
+}
+
+pub struct RootOrHalfSenateCmp;
+impl PrivilegeCmp<OriginCaller>  for RootOrHalfSenateCmp {
+  fn cmp_privilege(left: &OriginCaller, _: &OriginCaller) -> Option<Ordering> {
+		if EnsureRootOrHalfSenate::try_origin(
+			<OriginCaller as Into<RuntimeOrigin>>::into(left.clone())
+		).is_ok() {
+			Some(Ordering::Equal)
+		} else {
+			None
+		}
 	}
 }
 
